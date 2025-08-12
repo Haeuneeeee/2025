@@ -41,4 +41,25 @@ def compatibility_analysis(m1, m2):
         if m1[i] != m2[i]:
             traits.append(f"{m1[i]}형은 {mbti_traits_short[m1[i]]}, {m2[i]}형은 {mbti_traits_short[m2[i]]}. 서로의 차이를 재밌게 느낄 수 있어요.")
         else:
-            traits.append(f"둘
+            traits.append(f"둘 다 {mbti_traits_short[m1[i]]}, 그래서 함께 있을 때 편안함을 느껴요.")
+
+    cute_explanation = " ".join(traits)
+
+    return result, style + " " + cute_explanation
+
+# Streamlit UI
+st.title("💌 MBTI 궁합 테스트")
+st.write("두 사람의 MBTI를 선택하면 귀여운 궁합 설명을 알려드려요!")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    mbti1 = st.selectbox("첫 번째 MBTI", mbti_list)
+with col2:
+    mbti2 = st.selectbox("두 번째 MBTI", mbti_list)
+
+if st.button("궁합 확인하기"):
+    result, explanation = compatibility_analysis(mbti1, mbti2)
+    st.subheader(f"{mbti1} ❤️ {mbti2}")
+    st.markdown(f"**{result}**")
+    st.write(explanation)
