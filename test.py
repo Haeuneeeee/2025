@@ -49,10 +49,9 @@ st.subheader(f"📍 {region} 추천 여행 정보")
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.image(info["image"], use_column_width=True)
+    st.image(info["image"], use_container_width=True)
 
 with col2:
     st.markdown(f"**유명한 곳**: {info['famous']}")
     st.markdown(f"**대표 음식**: {info['food']}")
     st.markdown(f"**추천 활동**: {info['activity']}")
-
