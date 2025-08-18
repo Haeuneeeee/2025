@@ -1,152 +1,59 @@
-import random
-import textwrap
 import streamlit as st
-import plotly.graph_objects as go
-import reverse_geocoder as rg
+import folium
+from streamlit_folium import st_folium
 
-try:
-    import wikipedia
-    WIKI_AVAILABLE = True
-except Exception:
-    WIKI_AVAILABLE = False
-
-st.set_page_config(page_title="랜덤 여행지 추천기", page_icon="🌍", layout="centered")
-
-# ---------- 유틸 ----------
-CONTINENTS = {
-    "KR": "Asia", "JP": "Asia", "CN": "Asia", "VN": "Asia", "TH": "Asia", "MY": "Asia", "SG": "Asia",
-    "ID": "Asia", "PH": "Asia", "IN": "Asia", "NP": "Asia", "BD": "Asia", "LK": "Asia",
-    "FR": "Europe", "DE": "Europe", "IT": "Europe", "ES": "Europe", "PT": "Europe", "GB": "Europe",
-    "US": "North America", "CA": "North America", "MX": "North America",
-    "BR": "South America", "AR": "South America", "CL": "South America", "PE": "South America",
-    "AU": "Oceania", "NZ": "Oceania",
-    "ZA": "Africa", "EG": "Africa", "MA": "Africa", "KE": "Africa", "TZ": "Africa",
+# 지역별 추천 데이터 (간단 예시)
+region_data = {
+    "서울": {
+        "명소": ["경복궁", "남산타워", "광장시장"],
+        "추천": ["한강 자전거 타기", "홍대 거리 산책"]
+    },
+    "부산": {
+        "명소": ["해운대", "광안리 해수욕장", "자갈치 시장"],
+        "추천": ["광안대교 야경 보기", "부산 어묵 먹기"]
+    },
+    "제주": {
+        "명소": ["성산일출봉", "한라산", "협재 해수욕장"],
+        "추천": ["우도 자전거 여행", "제주 흑돼지 맛보기"]
+    },
+    "경주": {
+        "명소": ["불국사", "석굴암", "첨성대"],
+        "추천": ["보문호수 산책", "전통 한옥 체험"]
+    }
 }
 
-@st.cache_data(show_spinner=False)
-def get_random_coord():
-    lat = random.uniform(-60, 75)
-    lon = random.uniform(-180, 180)
-    return (lat, lon)
+st.title("🇰🇷 대한민국 지역 추천 앱")
+st.write("지도를 클릭하면 해당 지역의 명소와 추천할 만한 활동을 알려드려요!")
 
-@st.cache_data(show_spinner=False)
-def nearest_place(lat, lon):
-    result = rg.search((lat, lon), mode=1)[0]
-    return {
-        "name": result.get("name"),
-        "admin1": result.get("admin1"),
-        "country_code": result.get("cc"),
-        "lat": float(result.get("lat")),
-        "lon": float(result.get("lon")),
-    }
+# 지도 중심: 서울
+m = folium.Map(location=[36.5, 127.5], zoom_start=7)
 
-@st.cache_data(show_spinner=False)
-def wiki_summary(title: str, lang: str = "ko", sentences: int = 3):
-    if not WIKI_AVAILABLE:
-        return None
-    try:
-        wikipedia.set_lang(lang)
-        return wikipedia.summary(title, sentences=sentences)
-    except Exception:
-        return None
+# 각 지역에 마커 표시
+locations = {
+    "서울": [37.5665, 126.9780],
+    "부산": [35.1796, 129.0756],
+    "제주": [33.4996, 126.5312],
+    "경주": [35.8562, 129.2247]
+}
 
-@st.cache_data(show_spinner=False)
-def describe_place(place: dict):
-    name = place.get("name")
-    admin1 = place.get("admin1")
-    cc = place.get("country_code")
+for region, coords in locations.items():
+    folium.Marker(
+        location=coords,
+        popup=region,
+        tooltip=f"{region} 클릭"
+    ).add_to(m)
 
-    summary = None
-    candidates = [name, f"{name} ({admin1})", admin1]
-    for t in candidates:
-        if t:
-            summary = wiki_summary(t, lang="ko") or wiki_summary(t, lang="en")
-        if summary:
-            break
+# Streamlit에서 지도 표시
+map_data = st_folium(m, width=700, height=500)
 
-    header = f"**추천 여행지**: {name}, {admin1} ({cc})"
-    coords = f"위치: {place['lat']:.4f}°, {place['lon']:.4f}°"
-
-    if summary:
-        body = textwrap.shorten(summary.replace("\n", " "), width=600, placeholder=" …")
-    else:
-        body = "이 지역은 근처의 대표 도시에 기반해 추천되었습니다. 자세한 정보는 검색을 통해 확인해 보세요!"
-
-    return f"{header}\n\n{coords}\n\n{body}"
-
-def render_globe(lat: float, lon: float, label: str = "Destination"):
-    fig = go.Figure()
-    fig.add_trace(go.Scattergeo(
-        lon=[lon], lat=[lat],
-        text=[label],
-        mode="markers+text",
-        textposition="top center",
-        marker=dict(size=10),
-        showlegend=False,
-    ))
-
-    fig.update_geos(
-        projection_type="orthographic",
-        projection_rotation=dict(lon=lon, lat=lat, roll=0),
-        showcountries=True,
-        showcoastlines=True,
-        showocean=True,
-        showland=True,
-        landcolor="rgb(229, 236, 246)",
-        oceancolor="rgb(210, 232, 255)",
-        lakecolor="rgb(210, 232, 255)",
-        resolution=110,
-    )
-
-    fig.update_layout(
-        margin=dict(l=0, r=0, t=0, b=0),
-        height=520,
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-
-# ---------- UI ----------
-st.title("🌍 랜덤 여행지 추천기")
-st.caption("버튼 한 번으로 지구본에서 툭! 오늘의 목적지를 추천합니다 ✈️")
-
-col1, col2 = st.columns([2, 1])
-with col1:
-    continent_filter = st.selectbox(
-        "대륙 필터 (선택)",
-        ["전체", "Asia", "Europe", "North America", "South America", "Oceania", "Africa"],
-        index=0,
-        help="원하는 대륙만 골라서 뽑을 수 있어요."
-    )
-with col2:
-    show_wiki = st.toggle("위키 요약 보기", value=True)
-
-if "history" not in st.session_state:
-    st.session_state.history = []
-
-btn = st.button("🎲 랜덤 여행지 뽑기", type="primary")
-
-if btn or not st.session_state.history:
-    for _ in range(500):
-        lat, lon = get_random_coord()
-        place = nearest_place(lat, lon)
-        cc = place.get("country_code")
-        cont = CONTINENTS.get(cc)
-        if continent_filter == "전체" or cont == continent_filter:
-            st.session_state.history.insert(0, place)
-            break
-
-if st.session_state.history:
-    place = st.session_state.history[0]
-    render_globe(place["lat"], place["lon"], label=place["name"]) 
-
-    desc = describe_place(place) if show_wiki else (
-        f"**추천 여행지**: {place['name']}, {place['admin1']} ({place['country_code']})\n\n"
-        f"위치: {place['lat']:.4f}°, {place['lon']:.4f}°"
-    )
-    st.markdown(desc)
-
-    with st.expander("🧭 최근 추천 기록"):
-        for i, p in enumerate(st.session_state.history[:10], start=1):
-            st.write(f"{i}. {p['name']}, {p['admin1']} ({p['country_code']}) — {p['lat']:.4f}, {p['lon']:.4f}")
-else:
-    st.info("버튼을 눌러 첫 여행지를 뽑아보세요!")
+# 유저가 클릭한 지역 확인
+if map_data and map_data.get("last_object_clicked_popup"):
+    clicked_region = map_data["last_object_clicked_popup"]
+    if clicked_region in region_data:
+        st.subheader(f"📍 {clicked_region} 추천 정보")
+        st.markdown("**유명한 곳:**")
+        for place in region_data[clicked_region]["명소"]:
+            st.write(f"- {place}")
+        st.markdown("**추천할 만한 활동:**")
+        for activity in region_data[clicked_region]["추천"]:
+            st.write(f"- {activity}")
