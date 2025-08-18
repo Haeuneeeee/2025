@@ -150,7 +150,3 @@ if st.session_state.history:
             st.write(f"{i}. {p['name']}, {p['admin1']} ({p['country_code']}) — {p['lat']:.4f}, {p['lon']:.4f}")
 else:
     st.info("버튼을 눌러 첫 여행지를 뽑아보세요!")
-
-pip install -r requirements.txt
-streamlit run app.py
-
