@@ -1,4 +1,4 @@
 streamlit
-plotly
-reverse_geocoder
-wikipedia
+folium
+streamlit-folium
+requests
