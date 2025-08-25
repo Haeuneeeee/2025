@@ -18,7 +18,7 @@ cities = {
     "광주": [35.1595, 126.8526],
 }
 
-# 여행 정보 (놀거리/먹거리 확장)
+# 여행 정보
 travel_info = {
     "서울": {
         "명소": ["경복궁", "남산타워", "광화문", "동대문시장", "홍대거리", "롯데월드타워", "청계천", "북촌한옥마을"],
@@ -79,10 +79,10 @@ if map_data["last_object_clicked_popup"]:
     selected_city = map_data["last_object_clicked_popup"].replace(" 클릭!", "")
     
     st.subheader(f"📍 {selected_city} 유명한 명소")
-    st.write("\n".join(travel_info[selected_city]["명소"]))
+    st.markdown("\n".join([f"- {x}" for x in travel_info[selected_city]["명소"]]))
 
     st.subheader("🍜 먹거리")
-    st.write("\n".join(travel_info[selected_city]["먹거리"]))
+    st.markdown("\n".join([f"- {x}" for x in travel_info[selected_city]["먹거리"]]))
 
     st.subheader("🎉 놀거리")
-    st.write("\n".join(travel_info[selected_city]["놀거리"]))
+    st.markdown("\n".join([f"- {x}" for x in travel_info[selected_city]["놀거리"]]))
