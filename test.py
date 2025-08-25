@@ -55,3 +55,4 @@ if selected_region and selected_region in regions:
         st.markdown("**추천 활동:**")
         for act in info["activity"]:
             st.write(f"- {act}")
+
