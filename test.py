@@ -4,7 +4,7 @@ import folium
 
 st.set_page_config(page_title="대한민국 여행지도", layout="wide")
 st.title("🗺️ 대한민국 여행 지도")
-st.write("원하는 도시를 클릭하면 화려한 폭죽과 함께 유명한 장소, 먹거리, 놀거리를 볼 수 있어요!")
+st.write("도시를 클릭하면 유명 명소, 먹거리, 놀거리가 리스트로 나옵니다.")
 
 # 도시 좌표
 cities = {
@@ -18,8 +18,8 @@ cities = {
     "광주": [35.1595, 126.8526],
 }
 
-# 여행 정보 데이터 (생략 가능)
-travel_info = { 
+# 여행 정보
+travel_info = {
     "서울": {"명소":["경복궁","남산타워"],"먹거리":["불고기","비빔밥"],"놀거리":["한강 자전거 타기","명동 쇼핑"]},
     "부산": {"명소":["해운대","광안리 해수욕장"],"먹거리":["밀면","돼지국밥"],"놀거리":["해변 산책","국제시장 쇼핑"]},
     "제주": {"명소":["한라산","성산일출봉"],"먹거리":["흑돼지","갈치조림"],"놀거리":["오름 등반","서핑"]},
@@ -30,7 +30,7 @@ travel_info = {
     "광주": {"명소":["무등산","국립아시아문화전당"],"먹거리":["광주 떡갈비","상추튀김"],"놀거리":["문화전당 전시관람","충장로 쇼핑"]},
 }
 
-# 지도 표시
+# 지도 생성
 m = folium.Map(location=[36.5, 127.8], zoom_start=7)
 for city, coord in cities.items():
     folium.Marker(
@@ -42,91 +42,15 @@ for city, coord in cities.items():
 
 map_data = st_folium(m, width=800, height=500)
 
-# 도시 클릭 이벤트 처리
+# 클릭 이벤트 처리
 if map_data["last_object_clicked_popup"]:
     selected_city = map_data["last_object_clicked_popup"].replace(" 클릭!", "")
-
-    st.markdown(f"""
-    <div style="text-align:center; font-size:40px; color:gold; font-weight:bold;">
-        🎆 {selected_city} 여행 정보 🎆
-    </div>
-    <canvas id="canvas"></canvas>
-    <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = 300;
-
-    function random(min, max) {{ return Math.random() * (max - min) + min; }}
-
-    class Firework {{
-      constructor() {{
-        this.x = random(100, canvas.width-100);
-        this.y = canvas.height;
-        this.targetY = random(50, 150);
-        this.color = `hsl(${random(0, 360)}, 100%, 50%)`;
-        this.exploded = false;
-        this.particles = [];
-      }}
-      update() {{
-        if (!this.exploded) {{
-          this.y -= 5;
-          if (this.y <= this.targetY) {{
-            this.exploded = true;
-            for (let i=0; i<100; i++) {{
-              this.particles.push(new Particle(this.x, this.y, this.color));
-            }}
-          }}
-        }}
-      }}
-      draw() {{
-        if (!this.exploded) {{
-          ctx.fillStyle = this.color;
-          ctx.fillRect(this.x, this.y, 3, 10);
-        }} else {{
-          this.particles.forEach(p => {{p.update(); p.draw();}});
-        }}
-      }}
-    }}
-
-    class Particle {{
-      constructor(x, y, color) {{
-        this.x = x;
-        this.y = y;
-        this.color = color;
-        this.angle = random(0, Math.PI*2);
-        this.speed = random(1, 6);
-        this.life = 100;
-      }}
-      update() {{
-        this.x += Math.cos(this.angle)*this.speed;
-        this.y += Math.sin(this.angle)*this.speed;
-        this.speed *= 0.95;
-        this.life--;
-      }}
-      draw() {{
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, 2, 2);
-      }}
-    }}
-
-    let fireworks = [];
-    function animate() {{
-      requestAnimationFrame(animate);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      if (Math.random() < 0.05) fireworks.push(new Firework());
-      fireworks.forEach(fw => {{fw.update(); fw.draw();}});
-    }}
-    animate();
-    </script>
-    """, unsafe_allow_html=True)
-
-    st.subheader("📍 유명한 명소")
-    st.write(", ".join(travel_info[selected_city]["명소"]))
+    
+    st.subheader(f"📍 {selected_city} 유명한 명소")
+    st.write("\n".join(travel_info[selected_city]["명소"]))
 
     st.subheader("🍜 먹거리")
-    st.write(", ".join(travel_info[selected_city]["먹거리"]))
+    st.write("\n".join(travel_info[selected_city]["먹거리"]))
 
     st.subheader("🎉 놀거리")
-    st.write(", ".join(travel_info[selected_city]["놀거리"]))
+    st.write("\n".join(travel_info[selected_city]["놀거리"]))
