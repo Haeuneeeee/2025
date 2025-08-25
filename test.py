@@ -4,7 +4,7 @@ import folium
 
 st.set_page_config(page_title="대한민국 여행지도", layout="wide")
 st.title("🗺️ 대한민국 여행 지도")
-st.write("도시를 클릭하면 유명 명소, 먹거리, 놀거리가 리스트로 나옵니다.")
+st.write("도시를 클릭하면 명소, 먹거리, 놀거리가 리스트로 나옵니다.")
 
 # 도시 좌표
 cities = {
